@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Account — Wren &amp; Oak Realty</title>
+<meta name="description" content="Your Wren & Oak Realty client account — saved homes, showings and messages.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+<style>
+  .account-shell{ padding:64px 0 88px; }
+  .account-head{ display:flex; flex-wrap:wrap; justify-content:space-between; align-items:flex-end; gap:20px; margin-bottom:40px; }
+  .account-head h1{ font-size:clamp(26px,3.4vw,36px); }
+  .account-head p{ color:var(--text-muted); margin-top:6px; }
+  .account-grid{ display:grid; grid-template-columns:1fr; gap:24px; }
+  @media (min-width:820px){ .account-grid{ grid-template-columns:1fr 1fr; } }
+  .account-card{ background:var(--card-bg); border:1px solid var(--line); border-radius:2px; padding:26px; }
+  .account-card h2{ font-size:19px; margin-bottom:14px; }
+  .account-card ul{ list-style:none; margin:0; padding:0; }
+  .account-card li{ padding:12px 0; border-top:1px solid var(--line); font-size:14.5px; display:flex; justify-content:space-between; gap:12px; }
+  .account-card li:first-child{ border-top:none; }
+  .account-card .muted{ color:var(--text-muted); font-size:13px; }
+  .account-empty{ color:var(--text-muted); font-size:14.5px; }
+  .profile-card{ display:flex; align-items:center; gap:16px; }
+  .profile-avatar{
+    width:52px; height:52px; border-radius:50%; background:var(--bg-ink); color:var(--text-on-ink);
+    display:flex; align-items:center; justify-content:center; font-family:var(--serif); font-size:20px; flex-shrink:0;
+  }
+  .profile-name{ font-family:var(--serif); font-size:20px; }
+  .profile-email{ color:var(--text-muted); font-size:13.5px; margin-top:2px; }
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header" id="siteHeader">
+  <div class="container header-row">
+    <a href="home.html" class="wordmark">
+      <span class="mark">Wren <em>&amp;</em> Oak</span>
+      <span class="sub">Realty · Millhaven</span>
+    </a>
+    <nav class="main-nav" aria-label="Primary">
+      <ul>
+        <li><a href="home.html#listings">Buy</a></li>
+        <li><a href="home.html#listings">Rent</a></li>
+        <li><a href="home.html#contact">Sell</a></li>
+        <li><a href="home.html#agents">Agents</a></li>
+        <li><a href="home.html#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="header-actions">
+      <a href="#" id="logoutLink" class="btn btn-line btn-small">Log out</a>
+    </div>
+  </div>
+</header>
+
+<main id="main">
+  <div class="container account-shell">
+    <div class="account-head">
+      <div>
+        <h1>Welcome back<span id="welcomeName">.</span></h1>
+        <p>Here's what's on file for your account in this demo.</p>
+      </div>
+    </div>
+
+    <div class="account-card profile-card" style="margin-bottom:24px;">
+      <div class="profile-avatar" id="profileInitial">?</div>
+      <div>
+        <div class="profile-name" id="profileName">&nbsp;</div>
+        <div class="profile-email" id="profileEmail">&nbsp;</div>
+      </div>
+    </div>
+
+    <div class="account-grid">
+      <div class="account-card">
+        <h2>Saved homes</h2>
+        <ul id="savedHomesList"></ul>
+      </div>
+      <div class="account-card">
+        <h2>Upcoming showings</h2>
+        <ul id="showingsList"></ul>
+      </div>
+    </div>
+
+    <div class="demo-note" style="margin-top:24px;">
+      This account page is a client-side demo — the data above is stored only in this browser's local storage on this device (no server, no real database). Signing out or clearing your browser data will remove it.
+    </div>
+  </div>
+</main>
+
+<footer style="padding-top:32px;">
+  <div class="container footer-bottom" style="margin-top:0; border-top:1px solid var(--line-on-ink);">
+    <span>&copy; <span id="year"></span> Wren &amp; Oak Realty. All rights reserved.</span>
+    <span><a href="home.html" style="color:var(--muted-on-ink); text-decoration:none;">Back to homepage</a></span>
+  </div>
+</footer>
+
+<script src="auth.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  var account = window.WOAuth ? WOAuth.currentAccount() : null;
+
+  // Not signed in? Send them to the login page instead of showing an empty page.
+  if (!account){
+    window.location.href = 'index.html';
+    return;
+  }
+
+  document.getElementById('welcomeName').textContent = ', ' + account.name.split(' ')[0];
+  document.getElementById('profileName').textContent = account.name;
+  document.getElementById('profileEmail').textContent = account.email;
+  document.getElementById('profileInitial').textContent = account.name.charAt(0).toUpperCase();
+
+  function renderList(listEl, items, emptyText, renderItem){
+    listEl.innerHTML = '';
+    if (!items || items.length === 0){
+      var li = document.createElement('li');
+      li.className = 'account-empty';
+      li.textContent = emptyText;
+      listEl.appendChild(li);
+      return;
+    }
+    items.forEach(function(item){
+      var li = document.createElement('li');
+      li.innerHTML = renderItem(item);
+      listEl.appendChild(li);
+    });
+  }
+
+  renderList(
+    document.getElementById('savedHomesList'),
+    account.savedHomes,
+    'No saved homes yet — browse listings and save a few favorites.',
+    function(address){ return '<span>' + address + '</span><span class="muted">Saved</span>'; }
+  );
+
+  renderList(
+    document.getElementById('showingsList'),
+    account.showings,
+    'No showings booked yet.',
+    function(showing){ return '<span>' + showing.address + '</span><span class="muted">' + showing.when + '</span>'; }
+  );
+
+  document.getElementById('logoutLink').addEventListener('click', function(e){
+    e.preventDefault();
+    WOAuth.signOut();
+    window.location.href = 'index.html';
+  });
+
+  document.getElementById('year').textContent = new Date().getFullYear();
+})();
+</script>
+</body>
+</html>
