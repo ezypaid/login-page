@@ -126,7 +126,13 @@
     }
     items.forEach(function(item){
       var li = document.createElement('li');
-      li.innerHTML = renderItem(item);
+      var parts = renderItem(item);
+      parts.forEach(function(text, i){
+        var span = document.createElement('span');
+        if (i > 0) span.className = 'muted';
+        span.textContent = text;
+        li.appendChild(span);
+      });
       listEl.appendChild(li);
     });
   }
@@ -135,14 +141,14 @@
     document.getElementById('savedHomesList'),
     account.savedHomes,
     'No saved homes yet — browse listings and save a few favorites.',
-    function(address){ return '<span>' + address + '</span><span class="muted">Saved</span>'; }
+    function(address){ return [address, 'Saved']; }
   );
 
   renderList(
     document.getElementById('showingsList'),
     account.showings,
     'No showings booked yet.',
-    function(showing){ return '<span>' + showing.address + '</span><span class="muted">' + showing.when + '</span>'; }
+    function(showing){ return [showing.address, showing.when]; }
   );
 
   document.getElementById('logoutLink').addEventListener('click', function(e){

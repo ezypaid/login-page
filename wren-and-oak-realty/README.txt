@@ -9,16 +9,20 @@ WHAT'S IN HERE
   neighborhoods, contact) — everything that used to be index.html.
 - signup.html — create a demo client account.
 - account.html — the signed-in account page: saved homes and showings.
-- auth.js — the small shared script powering the demo account system above.
-  Accounts are stored only in this browser's local storage on this device —
-  there's no server or real database behind it, so don't use a real
+- auth.js — the shared script powering registration and login. Passwords are
+  salted and hashed (PBKDF2) before being stored; sessions expire (8 hours,
+  or 30 days with "Remember me"); 5 wrong passwords lock that email for 60
+  seconds. Accounts are stored only in this browser's local storage on this
+  device — there's no server or real database behind it, so don't use a real
   password. Clearing your browser data (or opening the site on another
-  device) resets it.
+  device) resets it. Hashing needs a secure context: use http://127.0.0.1,
+  http://localhost, or https — not a plain http:// LAN address.
   All CSS lives in styles.css; images are embedded as data URIs inside the
   HTML files, so there's nothing else to link or copy.
 
 HOW TO USE IT
-- Open locally: just double-click index.html, or open it in any browser.
+- Open locally: extract the zip, open the wren-and-oak-realty folder in VS Code,
+  then right-click index.html > Open with Live Server (or double-click index.html).
 - Host it: upload index.html to any static host (Netlify, Vercel, GitHub Pages,
   S3, cPanel, etc.) — no build step, no server-side code, no dependencies.
 - Edit it: it's plain HTML/CSS/JS. Colors and fonts are set as CSS variables

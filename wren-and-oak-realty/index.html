@@ -138,7 +138,7 @@
     showError('email', !emailOk);
     if (!emailOk) valid = false;
 
-    var passOk = password.length >= 6;
+    var passOk = password.length > 0;
     showError('password', !passOk);
     if (!passOk) valid = false;
 
@@ -150,22 +150,32 @@
       return;
     }
 
-    var result = WOAuth.signIn(email, password);
-    if (!result.ok){
-      if (result.reason === 'not_found'){
-        formStatus.textContent = 'No account found with that email \u2014 try creating one instead.';
-      } else {
-        formStatus.textContent = 'That password doesn\u2019t match this account.';
-      }
-      formStatus.classList.add('is-visible');
-      return;
-    }
+    var remember = form.querySelector('input[name="remember"]').checked;
+    var submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
 
-    formStatus.textContent = 'Signed in \u2014 taking you to your account\u2026';
-    formStatus.classList.add('is-visible');
-    window.setTimeout(function(){
-      window.location.href = 'account.html';
-    }, 400);
+    WOAuth.signIn(email, password, remember).then(function(result){
+      if (!result.ok){
+        submitBtn.disabled = false;
+        if (result.reason === 'not_found'){
+          formStatus.textContent = 'No account found with that email \u2014 try creating one instead.';
+        } else if (result.reason === 'locked'){
+          formStatus.textContent = 'Too many attempts. Try again in ' + result.retryIn + ' seconds.';
+        } else if (result.reason === 'unsupported'){
+          formStatus.textContent = 'Secure sign-in needs localhost or https. Open the site from your live server address (127.0.0.1) or a secure host.';
+        } else {
+          formStatus.textContent = 'That password doesn\u2019t match this account.';
+        }
+        formStatus.classList.add('is-visible');
+        return;
+      }
+
+      formStatus.textContent = 'Signed in \u2014 taking you to your account\u2026';
+      formStatus.classList.add('is-visible');
+      window.setTimeout(function(){
+        window.location.href = 'account.html';
+      }, 400);
+    });
   });
 
   document.getElementById('forgotLink').addEventListener('click', function(e){

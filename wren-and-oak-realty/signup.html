@@ -71,7 +71,7 @@
               <input type="password" id="su-password" name="password" autocomplete="new-password" required>
               <button type="button" class="password-toggle" id="passwordToggle" aria-pressed="false">Show</button>
             </div>
-            <p class="error-msg">Use at least 6 characters.</p>
+            <p class="error-msg">Use at least 8 characters.</p>
           </div>
 
           <div class="field" id="field-confirm">
@@ -149,7 +149,7 @@
     showError('email', !emailOk);
     if (!emailOk) valid = false;
 
-    var passOk = password.length >= 6;
+    var passOk = password.length >= 8;
     showError('password', !passOk);
     if (!passOk) valid = false;
 
@@ -165,18 +165,29 @@
       return;
     }
 
-    var result = WOAuth.signUp(name, email, password);
-    if (!result.ok && result.reason === 'exists'){
-      formStatus.textContent = 'An account with that email already exists — try signing in instead.';
-      formStatus.classList.add('is-visible');
-      return;
-    }
+    var submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
 
-    formStatus.textContent = 'Account created \u2014 taking you to your account\u2026';
-    formStatus.classList.add('is-visible');
-    window.setTimeout(function(){
-      window.location.href = 'account.html';
-    }, 500);
+    WOAuth.signUp(name, email, password, false).then(function(result){
+      if (!result.ok){
+        submitBtn.disabled = false;
+        if (result.reason === 'exists'){
+          formStatus.textContent = 'An account with that email already exists \u2014 try signing in instead.';
+        } else if (result.reason === 'unsupported'){
+          formStatus.textContent = 'Secure sign-up needs localhost or https. Open the site from your live server address (127.0.0.1) or a secure host.';
+        } else {
+          formStatus.textContent = 'Check the highlighted fields below.';
+        }
+        formStatus.classList.add('is-visible');
+        return;
+      }
+
+      formStatus.textContent = 'Account created \u2014 taking you to your account\u2026';
+      formStatus.classList.add('is-visible');
+      window.setTimeout(function(){
+        window.location.href = 'account.html';
+      }, 500);
+    });
   });
 
   document.getElementById('year').textContent = new Date().getFullYear();
